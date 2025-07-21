@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pure JavaScript SQLite WASM Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+        }
+        #test-output {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        #test-output div {
+            margin: 2px 0;
+        }
+        button {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h1>Pure JavaScript SQLite WASM Test</h1>
+    
+    <div class="status">
+        <strong>Test:</strong> This page loads SQLite WASM using pure JavaScript to verify 
+        the module works correctly before debugging Dart interop issues.
+    </div>
+    
+    <div>
+        <button onclick="location.reload()">Reload Test</button>
+        <button onclick="runTest()">Run Test</button>
+    </div>
+    
+    <h2>Test Output</h2>
+    <div id="test-output">
+        Click "Run Test" to start...
+    </div>
+
+    <script>
+        function log(message) {
+            console.log(message);
+            const output = document.getElementById('test-output');
+            output.innerHTML += '<div>' + message + '</div>';
+        }
+
+        async function runTest() {
+            const output = document.getElementById('test-output');
+            output.innerHTML = '';
+            
+            try {
+                log('🚀 Starting pure JavaScript WASM test...');
+                
+                // Load WASM module
+                log('📦 Fetching sqlite3.wasm...');
+                const response = await fetch('sqlite3.wasm');
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch WASM: ${response.status}`);
+                }
+                
+                const wasmBytes = await response.arrayBuffer();
+                log('✅ WASM bytes loaded: ' + wasmBytes.byteLength + ' bytes');
+                
+                // Create memory
+                const memory = new WebAssembly.Memory({ initial: 16 });
+                
+                // WASI stubs - just return 0 for everything
+                const wasiStub = () => 0;
+                const wasiVoidStub = () => {};
+                
+                const imports = {
+                    env: { memory: memory },
+                    wasi_snapshot_preview1: {
+                        proc_exit: wasiVoidStub,
+                        environ_get: wasiStub,
+                        environ_sizes_get: wasiStub,
+                        clock_time_get: wasiStub,
+                        fd_close: wasiStub,
+                        fd_fdstat_get: wasiStub,
+                        fd_fdstat_set_flags: wasiStub,
+                        fd_filestat_get: wasiStub,
+                        fd_filestat_set_size: wasiStub,
+                        fd_prestat_get: wasiStub,
+                        fd_prestat_dir_name: wasiStub,
+                        fd_read: wasiStub,
+                        fd_seek: wasiStub,
+                        fd_sync: wasiStub,
+                        fd_write: wasiStub,
+                        path_create_directory: wasiStub,
+                        path_filestat_get: wasiStub,
+                        path_filestat_set_times: wasiStub,
+                        path_open: wasiStub,
+                        path_readlink: wasiStub,
+                        path_remove_directory: wasiStub,
+                        path_unlink_file: wasiStub,
+                        poll_oneoff: wasiStub,
+                    }
+                };
+                
+                log('📦 Instantiating WASM module...');
+                const result = await WebAssembly.instantiate(wasmBytes, imports);
+                const { exports } = result.instance;
+                
+                log('✅ WASM module instantiated successfully');
+                
+                // Test SQLite functions
+                log('🔧 Initializing SQLite...');
+                const initResult = exports.sqlite3_initialize();
+                log('✅ SQLite initialized with result: ' + initResult);
+                
+                log('📋 Getting SQLite version...');
+                const versionPtr = exports.sqlite3_libversion();
+                
+                // Read string from memory
+                const memoryBuffer = memory.buffer;
+                const uint8Array = new Uint8Array(memoryBuffer);
+                
+                // Find null terminator
+                let end = versionPtr;
+                while (end < uint8Array.length && uint8Array[end] !== 0) {
+                    end++;
+                }
+                
+                const versionBytes = uint8Array.slice(versionPtr, end);
+                const version = new TextDecoder().decode(versionBytes);
+                log('✅ SQLite version: ' + version);
+                
+                log('🔢 Getting version number...');
+                const versionNumber = exports.sqlite3_libversion_number();
+                log('✅ Version number: ' + versionNumber);
+                
+                // Verify consistency
+                const versionParts = version.split('.').map(Number);
+                const expectedNumber = versionParts[0] * 1000000 + 
+                                      versionParts[1] * 1000 + 
+                                      versionParts[2];
+                
+                if (versionNumber === expectedNumber) {
+                    log('✅ Version consistency check passed');
+                } else {
+                    log('❌ Version mismatch: ' + versionNumber + ' != ' + expectedNumber);
+                }
+                
+                log('🎉 All WASM tests passed!');
+                
+                // Test shutdown
+                log('🧹 Shutting down SQLite...');
+                const shutdownResult = exports.sqlite3_shutdown();
+                log('✅ Shutdown complete with result: ' + shutdownResult);
+                
+            } catch (e) {
+                log('❌ Error: ' + e.message);
+                log('Stack trace: ' + e.stack);
+            }
+        }
+
+        // Auto-run test on page load
+        document.addEventListener('DOMContentLoaded', runTest);
+    </script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Dart WASM Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #f0f8ff;
+            border-left: 4px solid #6366f1;
+        }
+        #test-output {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        #test-output div {
+            margin: 2px 0;
+        }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #4f46e5; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h1>Simple Dart WASM Test</h1>
+    
+    <div class="status">
+        <strong>Test:</strong> This demonstrates Dart calling a JavaScript helper function 
+        that tests the SQLite WASM module.
+    </div>
+    
+    <div>
+        <button onclick="location.reload()">Reload Test</button>
+    </div>
+    
+    <h2>Test Output</h2>
+    <div id="test-output">
+        Loading...
+    </div>
+
+    <script>
+        // JavaScript helper function that Dart can call
+        async function testSqliteWasm() {
+            try {
+                // Load WASM module
+                const response = await fetch('sqlite3.wasm');
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch WASM: ${response.status}`);
+                }
+                
+                const wasmBytes = await response.arrayBuffer();
+                
+                // Create memory
+                const memory = new WebAssembly.Memory({ initial: 16 });
+                
+                // WASI stubs
+                const wasiStub = () => 0;
+                const wasiVoidStub = () => {};
+                
+                const imports = {
+                    env: { memory: memory },
+                    wasi_snapshot_preview1: {
+                        proc_exit: wasiVoidStub,
+                        environ_get: wasiStub,
+                        environ_sizes_get: wasiStub,
+                        clock_time_get: wasiStub,
+                        fd_close: wasiStub,
+                        fd_fdstat_get: wasiStub,
+                        fd_fdstat_set_flags: wasiStub,
+                        fd_filestat_get: wasiStub,
+                        fd_filestat_set_size: wasiStub,
+                        fd_prestat_get: wasiStub,
+                        fd_prestat_dir_name: wasiStub,
+                        fd_read: wasiStub,
+                        fd_seek: wasiStub,
+                        fd_sync: wasiStub,
+                        fd_write: wasiStub,
+                        path_create_directory: wasiStub,
+                        path_filestat_get: wasiStub,
+                        path_filestat_set_times: wasiStub,
+                        path_open: wasiStub,
+                        path_readlink: wasiStub,
+                        path_remove_directory: wasiStub,
+                        path_unlink_file: wasiStub,
+                        poll_oneoff: wasiStub,
+                    }
+                };
+                
+                // Instantiate and test
+                const result = await WebAssembly.instantiate(wasmBytes, imports);
+                const { exports } = result.instance;
+                
+                // Test SQLite functions
+                exports.sqlite3_initialize();
+                const versionPtr = exports.sqlite3_libversion();
+                const versionNumber = exports.sqlite3_libversion_number();
+                
+                // Read version string
+                const memoryBuffer = memory.buffer;
+                const uint8Array = new Uint8Array(memoryBuffer);
+                let end = versionPtr;
+                while (end < uint8Array.length && uint8Array[end] !== 0) {
+                    end++;
+                }
+                const versionBytes = uint8Array.slice(versionPtr, end);
+                const version = new TextDecoder().decode(versionBytes);
+                
+                exports.sqlite3_shutdown();
+                
+                return `SQLite version: ${version}, number: ${versionNumber} (WASM bytes: ${wasmBytes.byteLength})`;
+                
+            } catch (error) {
+                return `Error: ${error.message}`;
+            }
+        }
+    </script>
+
+    <!-- Load the compiled Dart JavaScript -->
+    <script src="simple_dart_test.dart.js"></script>
+</body>
+</html>

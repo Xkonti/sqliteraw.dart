@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLite WASM Data Types Validation Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #e8f4ff;
+            border-left: 4px solid #2196f3;
+        }
+        #test-output {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+        #test-output div {
+            margin: 2px 0;
+        }
+        button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { 
+            background: #1976d2; 
+        }
+        button:disabled { 
+            background: #ccc; 
+            cursor: not-allowed; 
+        }
+        .test-info {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #4caf50;
+            margin: 15px 0;
+        }
+        .test-info h3 {
+            margin-top: 0;
+            color: #2e7d32;
+        }
+        .test-info ul {
+            margin-bottom: 0;
+        }
+        .test-info li {
+            margin: 5px 0;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+        .data-type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .data-type-card {
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .data-type-card h4 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .data-type-card ul {
+            margin: 10px 0 0 0;
+            padding-left: 20px;
+        }
+        .data-type-card li {
+            margin: 3px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>SQLite WASM Data Types Validation Test</h1>
+    
+    <div class="status">
+        <strong>Phase 2 Validation:</strong> This test validates comprehensive data type handling 
+        through the WASM boundary, ensuring all SQLite data types work correctly with perfect integrity.
+    </div>
+    
+    <div class="test-info">
+        <h3>🧪 Comprehensive Data Type Testing</h3>
+        <p>This test validates that all SQLite data types work correctly through the WASM boundary 
+        using complete round-trip operations (insert → retrieve → compare). Each test ensures 
+        data integrity is maintained and proves the implementation can handle real user data reliably.</p>
+    </div>
+
+    <div class="data-type-grid">
+        <div class="data-type-card">
+            <h4>📝 TEXT Data</h4>
+            <ul>
+                <li>UTF-8 encoding validation</li>
+                <li>International characters (日本語, Русский)</li>
+                <li>Unicode emojis (🌟, 🚀, 🎯)</li>
+                <li>Mixed character sets</li>
+                <li>Empty strings vs NULL</li>
+                <li>Large text content</li>
+            </ul>
+        </div>
+        
+        <div class="data-type-card">
+            <h4>🔢 INTEGER Data</h4>
+            <ul>
+                <li>Zero, positive, negative values</li>
+                <li>32-bit signed integer limits</li>
+                <li>Max: 2,147,483,647</li>
+                <li>Min: -2,147,483,648</li>
+                <li>Precision maintenance</li>
+                <li>Type detection accuracy</li>
+            </ul>
+        </div>
+        
+        <div class="data-type-card">
+            <h4>💾 BLOB Data</h4>
+            <ul>
+                <li>Binary content handling</li>
+                <li>Null bytes preservation</li>
+                <li>All byte values (0-255)</li>
+                <li>Empty blobs</li>
+                <li>Memory management</li>
+                <li>Byte-level integrity</li>
+            </ul>
+        </div>
+        
+        <div class="data-type-card">
+            <h4>∅ NULL Values</h4>
+            <ul>
+                <li>NULL vs empty string distinction</li>
+                <li>NULL in TEXT columns</li>
+                <li>NULL in INTEGER columns</li>
+                <li>NULL in BLOB columns</li>
+                <li>Proper type detection</li>
+                <li>Return value handling</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-info">
+        <h3>✅ Success Criteria</h3>
+        <ul>
+            <li><strong>Perfect Data Integrity:</strong> All data must round-trip with zero corruption</li>
+            <li><strong>UTF-8 Compliance:</strong> International characters and emojis preserved</li>
+            <li><strong>Type Accuracy:</strong> SQLite storage classes correctly detected</li>
+            <li><strong>Binary Preservation:</strong> BLOB data maintains all bytes including nulls</li>
+            <li><strong>NULL Handling:</strong> NULL values properly distinguished and returned</li>
+            <li><strong>Mixed Operations:</strong> All data types work together in single queries</li>
+            <li><strong>Memory Stability:</strong> No leaks or resource management issues</li>
+            <li><strong>Performance:</strong> Acceptable speed for typical data sizes</li>
+        </ul>
+    </div>
+
+    <div class="test-info">
+        <h3>🔍 Test Coverage</h3>
+        <ul>
+            <li><strong>Test 1:</strong> UTF-8 Text with 7 different character patterns</li>
+            <li><strong>Test 2:</strong> Integer values with 9 edge cases</li>
+            <li><strong>Test 3:</strong> BLOB data with 6 binary patterns</li>
+            <li><strong>Test 4:</strong> NULL values in all column types</li>
+            <li><strong>Test 5:</strong> Mixed data types in single operations</li>
+        </ul>
+    </div>
+    
+    <div>
+        <button onclick="location.reload()">Reload Test</button>
+    </div>
+    
+    <h2>Test Output</h2>
+    <div id="test-output" class="loading">
+        Loading comprehensive SQLite WASM data types validation test...
+    </div>
+
+    <!-- Load extended JavaScript wrapper functions first -->
+    <script src="sqlite_wasm_core.js"></script>
+    
+    <!-- Then load the compiled Dart test -->
+    <script src="data_types_test.dart.js"></script>
+</body>
+</html>

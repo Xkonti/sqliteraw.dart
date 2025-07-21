@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLite WASM Dart Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #f0f0f0;
+            border-left: 4px solid #007acc;
+        }
+        #test-output {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        #test-output div {
+            margin: 2px 0;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #005a9e; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h1>SQLite WASM Dart Test</h1>
+    
+    <div class="status">
+        <strong>Test:</strong> This page tests the SQLite WASM module using compiled Dart code.
+        The WASM module is loaded and SQLite version functions are called.
+    </div>
+    
+    <div>
+        <button onclick="location.reload()">Reload Test</button>
+    </div>
+    
+    <h2>Test Output</h2>
+    <div id="test-output">
+        Loading...
+    </div>
+
+    <!-- Load the compiled Dart JavaScript -->
+    <script src="test_wasm.dart.js"></script>
+</body>
+</html>

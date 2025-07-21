@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core SQLite WASM Lifecycle Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #e8f4ff;
+            border-left: 4px solid #2196f3;
+        }
+        #test-output {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        #test-output div {
+            margin: 2px 0;
+        }
+        button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { 
+            background: #1976d2; 
+        }
+        button:disabled { 
+            background: #ccc; 
+            cursor: not-allowed; 
+        }
+        .test-info {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #4caf50;
+            margin: 15px 0;
+        }
+        .test-info h3 {
+            margin-top: 0;
+            color: #2e7d32;
+        }
+        .test-info ul {
+            margin-bottom: 0;
+        }
+        .test-info li {
+            margin: 5px 0;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Core SQLite WASM Lifecycle Test</h1>
+    
+    <div class="status">
+        <strong>Phase 1 Validation:</strong> This test validates the fundamental SQLite database lifecycle 
+        operations through the WASM boundary. It establishes the foundation that all subsequent phases depend on.
+    </div>
+    
+    <div class="test-info">
+        <h3>🧪 What This Test Validates</h3>
+        <ul>
+            <li><strong>WASM Module Initialization:</strong> SQLite 3.50.3 loads and initializes correctly</li>
+            <li><strong>Database Lifecycle:</strong> Open :memory: database → use → close workflow</li>
+            <li><strong>Statement Preparation:</strong> SQL compilation through sqlite3_prepare_v2()</li>
+            <li><strong>Statement Execution:</strong> SQL execution through sqlite3_step()</li>
+            <li><strong>Resource Management:</strong> Proper cleanup via sqlite3_finalize() and sqlite3_close()</li>
+            <li><strong>Error Handling:</strong> Comprehensive error detection and propagation</li>
+            <li><strong>Dart-JS-WASM Chain:</strong> Complete interop validation for core operations</li>
+        </ul>
+    </div>
+
+    <div class="test-info">
+        <h3>📋 Test Sequence</h3>
+        <ul>
+            <li>Initialize SQLite WASM module with WASI stubs</li>
+            <li>Open in-memory database (:memory:)</li>
+            <li>Prepare and execute CREATE TABLE statement</li>
+            <li>Prepare and execute INSERT statement</li>
+            <li>Finalize all prepared statements</li>
+            <li>Close database connection</li>
+            <li>Verify all operations return correct SQLite result codes</li>
+        </ul>
+    </div>
+    
+    <div>
+        <button onclick="location.reload()">Reload Test</button>
+    </div>
+    
+    <h2>Test Output</h2>
+    <div id="test-output" class="loading">
+        Loading SQLite WASM core lifecycle test...
+    </div>
+
+    <!-- Load JavaScript wrapper functions first -->
+    <script src="sqlite_wasm_core.js"></script>
+    
+    <!-- Then load the compiled Dart test -->
+    <script src="core_lifecycle_test.dart.js"></script>
+</body>
+</html>

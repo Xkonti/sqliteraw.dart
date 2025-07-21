@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLite Raw WASM Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .loading { background: #e3f2fd; border-left: 4px solid #2196f3; }
+        .success { background: #e8f5e8; border-left: 4px solid #4caf50; }
+        .error { background: #ffebee; border-left: 4px solid #f44336; }
+        .info { background: #f3e5f5; border-left: 4px solid #9c27b0; }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #1976d2; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h1>SQLite Raw WASM Test</h1>
+    
+    <div class="info status">
+        <strong>Info:</strong> This page tests the minimal SQLite WASM implementation.
+        The WASM module should be automatically loaded and SQLite version information displayed.
+    </div>
+    
+    <div id="status" class="loading status">
+        <strong>Status:</strong> Initializing...
+    </div>
+    
+    <div>
+        <button id="test-btn" onclick="runTest()" disabled>Run Test</button>
+        <button id="reload-btn" onclick="location.reload()">Reload</button>
+    </div>
+    
+    <div id="results" style="display: none;">
+        <h2>Results</h2>
+        <pre id="output"></pre>
+    </div>
+
+    <script>
+        // Simple test runner for the WASM module
+        let output = '';
+        
+        function log(message) {
+            output += message + '\n';
+            console.log(message);
+            document.getElementById('output').textContent = output;
+        }
+        
+        function updateStatus(message, type = 'loading') {
+            const statusEl = document.getElementById('status');
+            statusEl.innerHTML = `<strong>Status:</strong> ${message}`;
+            statusEl.className = `${type} status`;
+        }
+        
+        function showResults() {
+            document.getElementById('results').style.display = 'block';
+        }
+        
+        async function runTest() {
+            const testBtn = document.getElementById('test-btn');
+            testBtn.disabled = true;
+            
+            output = '';
+            showResults();
+            
+            try {
+                updateStatus('Running test...', 'loading');
+                log('🚀 Starting SQLite WASM test...');
+                
+                // Check if sqlite3.wasm exists
+                log('📦 Checking for sqlite3.wasm...');
+                const response = await fetch('sqlite3.wasm');
+                if (!response.ok) {
+                    throw new Error(`sqlite3.wasm not found (${response.status})`);
+                }
+                log('✅ sqlite3.wasm found');
+                
+                // Test would go here when Dart compilation is ready
+                log('⚠️  Dart WASM test not yet implemented');
+                log('   Next steps:');
+                log('   1. Run: cd assets/wasm && ./build.sh');
+                log('   2. Run: dart compile js test/minimal_web_test.dart -o web/test.js');
+                log('   3. Load and run the compiled test');
+                
+                updateStatus('Test completed (partial)', 'info');
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`);
+                updateStatus('Test failed', 'error');
+            } finally {
+                testBtn.disabled = false;
+            }
+        }
+        
+        // Auto-run basic checks on load
+        window.addEventListener('load', async () => {
+            try {
+                updateStatus('Checking environment...', 'loading');
+                
+                // Check WebAssembly support
+                if (typeof WebAssembly === 'undefined') {
+                    throw new Error('WebAssembly not supported');
+                }
+                
+                updateStatus('Ready to test', 'success');
+                document.getElementById('test-btn').disabled = false;
+                
+            } catch (error) {
+                updateStatus(`Environment check failed: ${error.message}`, 'error');
+            }
+        });
+    </script>
+</body>
+</html>

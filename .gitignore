@@ -1,2 +1,29 @@
+# IDE
 .idea/
+.vscode/
+
+# Build outputs
 build/
+.dart_tool/
+
+# Web compiled artifacts
+web/*.js
+web/*.js.map
+web/*.js.deps
+web/*.wasm
+!web/sqlite_wasm_core.js
+
+# WASM build artifacts
+assets/wasm/build/
+
+# Dart compiled outputs
+*.dart.js
+*.dart.js.map
+*.dart.js.deps
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Package manager
+pubspec.lock
