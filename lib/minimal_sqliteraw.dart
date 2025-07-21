@@ -1,7 +1,7 @@
-/// Minimal SQLite Raw API for testing WASM compilation
+/// Minimal SQLite Raw API using universal_ffi for cross-platform support
 /// 
-/// This library provides a minimal interface to test that WASM compilation
-/// works and basic SQLite functions can be called through both FFI and WASM.
+/// This library provides a minimal interface that works seamlessly across
+/// native platforms (using dart:ffi) and web platforms (using WASM).
 /// 
 /// Example usage:
 /// ```dart
@@ -23,18 +23,18 @@ library minimal_sqliteraw;
 export 'src/minimal/minimal_api.dart';
 
 // Conditional exports for platform-specific implementations
-export 'src/minimal/native_impl.dart'
-    if (dart.library.js_interop) 'src/minimal/wasm_impl.dart';
+export 'src/minimal/unified_native_impl.dart'
+    if (dart.library.js_interop) 'src/minimal/unified_web_impl.dart';
 
 import 'src/minimal/minimal_api.dart';
-import 'src/minimal/native_impl.dart'
-    if (dart.library.js_interop) 'src/minimal/wasm_impl.dart';
+import 'src/minimal/unified_native_impl.dart'
+    if (dart.library.js_interop) 'src/minimal/unified_web_impl.dart';
 
-/// Create a platform-appropriate minimal SQLite implementation
+/// Create a cross-platform minimal SQLite implementation
 /// 
-/// On native platforms (VM, AOT), this returns a native FFI implementation.
-/// On web platforms, this returns a WASM implementation.
+/// Uses universal_ffi to automatically select the appropriate implementation:
+/// - Native platforms (VM, AOT): Uses dart:ffi with system SQLite libraries
+/// - Web platforms: Uses WASM with minimal JavaScript bridge
 MinimalSqliteApi createMinimalSqlite() {
-  // The conditional import ensures the right implementation is used
-  return MinimalSqliteNativeImpl();
+  return MinimalSqliteUnifiedImpl();
 }

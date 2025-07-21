@@ -81,14 +81,19 @@ void main() {
     test('WASM handles multiple rapid calls', () async {
       await sqlite.initialize();
       
-      // Call version functions multiple times rapidly
-      for (int i = 0; i < 10; i++) {
+      // Call version functions multiple times rapidly to test WASM bridge stability
+      for (int i = 0; i < 50; i++) {
         final version = sqlite.getVersion();
         final versionNumber = sqlite.getVersionNumber();
         
         expect(version, isNotEmpty);
         expect(versionNumber, greaterThan(0));
+        
+        if (i % 10 == 0) {
+          print('📊 Rapid WASM call batch ${i ~/ 10 + 1}/5 completed');
+        }
       }
+      print('✅ WASM rapid call test completed - universal_ffi bridge stable');
     });
   });
 }
